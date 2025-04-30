@@ -173,14 +173,18 @@ export const AuthProvider = ({ children }) => {
         gpu_endpoint: data.gpu_endpoint || gpuEndpoint,
       };
 
-      // Store user data
-      await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(userData));
-      setUser(userData);
-      setIsAuthenticated(true);
+      // Clear any existing auth state since we want explicit login
+      await Promise.all([
+        AsyncStorage.removeItem(ACCESS_TOKEN_KEY),
+        AsyncStorage.removeItem(REFRESH_TOKEN_KEY),
+        AsyncStorage.removeItem(USER_DATA_KEY),
+      ]);
+      setUser(null);
+      setIsAuthenticated(false);
       
-      // Delay navigation to ensure state is updated first
+      // Navigate to login page
       setTimeout(() => {
-        router.replace('/');
+        router.replace('/login');
       }, 100);
       return true;
     } catch (error) {
