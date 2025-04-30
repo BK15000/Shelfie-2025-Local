@@ -576,8 +576,8 @@ async def process_image(
                     boardGame = ai.parse_api_response(api_response).boardGame
                     game_name = boardGame.name
                 else:
-                    print(f"No valid response for segment {seg_id}, possibly due to rate limiting")
-                    game_name = "Unknown Game (Rate Limited)"
+                    print(f"No valid response for segment {seg_id}, possibly due to insufficient balance")
+                    game_name = "Unknown Game (Check OpenAI balance)"
             except Exception as e:
                 print(f"Error identifying game for segment {seg_id}: {str(e)}")
                 game_name = "Unknown Game"
