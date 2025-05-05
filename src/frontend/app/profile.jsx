@@ -12,14 +12,48 @@ export default function Profile() {
   const [loadingTimeout, setLoadingTimeout] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isCleaning, setIsCleaning] = useState(false);
+  const [gpuEndpoint, setGpuEndpoint] = useState('');
   const [openaiApiKey, setOpenaiApiKey] = useState('');
-  
+  const [port, setPort] = useState('');
   // Initialize user settings when user data is available
   useEffect(() => {
     if (user) {
+      // First set values from the user object
+      if (user.gpu_endpoint) {
+        setGpuEndpoint(user.gpu_endpoint);
+      }
+      
       if (user.openai_api_key) {
         setOpenaiApiKey(user.openai_api_key);
       }
+      
+      if (user.port) {
+        setPort(user.port);
+      }
+      
+      // Then fetch the latest values from the server
+      const getLatestUserData = async () => {
+        try {
+          await fetchGpuEndpoint();
+          
+          // Update state with the latest values from the user object
+          if (user.gpu_endpoint) {
+            setGpuEndpoint(user.gpu_endpoint);
+          }
+          
+          if (user.openai_api_key) {
+            setOpenaiApiKey(user.openai_api_key);
+          }
+          
+          if (user.port) {
+            setPort(user.port);
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+        }
+      };
+      
+      getLatestUserData();
     }
   }, [user, fetchGpuEndpoint]);
     
@@ -39,6 +73,22 @@ export default function Profile() {
       }
     };
   }, [isLoading]);
+
+  const handleUpdateGpuEndpoint = async () => {
+    setIsUpdating(true);
+    try {
+      const success = await updateGpuEndpoint(gpuEndpoint);
+      if (success) {
+        Alert.alert('Success', 'GPU endpoint updated successfully');
+      } else {
+        Alert.alert('Error', 'Failed to update GPU endpoint');
+      }
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   const handleCleanSegments = async () => {
     setIsCleaning(true);
@@ -143,10 +193,104 @@ export default function Profile() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>API Settings</Text>
+        <Text style={styles.sectionTitle}>Collection Management</Text>
         <Text style={styles.sectionDescription}>
-          Configure your OpenAI API key for game identification
+          Manage and export your board game collection
         </Text>
+
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: COLORS.action.approveBackground }]}
+          onPress={async () => {
+            try {
+              console.log('Starting CSV export...');
+              const token = await AsyncStorage.getItem('auth_access_token');
+              if (!token) {
+                throw new Error('No auth token found');
+              }
+              
+              const url = getAuthUrl('/collection/export-csv');
+              console.log('Export URL:', url);
+              console.log('Auth token:', token);
+              
+              const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                  'Authorization': `Bearer ${token}`
+                }
+              });
+              
+              console.log('Response status:', response.status);
+              if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Export failed:', response.status, errorText);
+                throw new Error(`Failed to export collection: ${response.status} ${errorText}`);
+              }
+              console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+              
+              console.log('Response received, creating blob...');
+              const blob = await response.blob();
+              console.log('Blob created, initiating download...');
+              
+              // For React Native Web
+              if (typeof window !== 'undefined') {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'collection.csv';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+              } else {
+                // For React Native mobile
+                Alert.alert('Error', 'CSV export is only supported on web platforms');
+                return;
+              }
+              
+              Alert.alert('Success', 'Collection exported successfully');
+            } catch (error) {
+              console.error('Export error:', error);
+              Alert.alert('Error', `Export failed: ${error.message}`);
+            }
+          }}
+        >
+          <Ionicons name="download-outline" size={20} color={COLORS.text.primary} />
+          <Text style={styles.buttonText}>Export Collection to CSV</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Server Settings</Text>
+        <Text style={styles.sectionDescription}>
+          Configure your server settings for image processing and game identification
+        </Text>
+        
+        {/* GPU Endpoint */}
+        <Text style={styles.fieldLabel}>GPU Endpoint URL</Text>
+        <View style={styles.inputContainer}>
+          <Ionicons name="server-outline" size={20} color={COLORS.text.secondary} style={styles.inputIcon} />
+          <TextInput
+            style={styles.input}
+            placeholder="GPU Endpoint (e.g., http://192.168.1.1 or https://example.com)"
+            placeholderTextColor={COLORS.text.secondary}
+            value={gpuEndpoint}
+            onChangeText={setGpuEndpoint}
+          />
+        </View>
+        
+        {/* Port (Optional) */}
+        <Text style={styles.fieldLabel}>Port (Optional)</Text>
+        <View style={styles.inputContainer}>
+          <Ionicons name="git-network-outline" size={20} color={COLORS.text.secondary} style={styles.inputIcon} />
+          <TextInput
+            style={styles.input}
+            defaultValue={'8080'}
+            placeholderTextColor={COLORS.text.secondary}
+            value={port}
+            onChangeText={setPort}
+            keyboardType="numeric"
+          />
+        </View>
         
         {/* OpenAI API Key */}
         <Text style={styles.fieldLabel}>OpenAI API Key</Text>
@@ -166,6 +310,8 @@ export default function Profile() {
           onPress={() => {
             setIsUpdating(true);
             updateUserSettings({
+              gpu_endpoint: gpuEndpoint,
+              port: port,
               openai_api_key: openaiApiKey
             })
               .then(success => {
@@ -205,7 +351,7 @@ export default function Profile() {
       </TouchableOpacity>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Board Game Collection App</Text>
+        <Text style={styles.footerText}>Shelfie</Text>
         <Text style={styles.footerVersion}>Version 1.0.0</Text>
       </View>
     </ScrollView>
