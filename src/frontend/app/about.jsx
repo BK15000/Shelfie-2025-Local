@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Text, View, Image, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
+import { Text, View, Image, ScrollView, StyleSheet, TouchableOpacity, Linking } from "react-native";
 import { COLORS, SPACING, TYPOGRAPHY } from "../utils/theme";
 import globalStyles from "../utils/styles";
 
@@ -95,6 +95,7 @@ export default function About() {
           <View style={styles.bulletPoints}>
             <Text style={styles.bulletPoint}>• Docker and Docker Compose</Text>
             <Text style={styles.bulletPoint}>• Git</Text>
+            <Text style={styles.bulletPoint}>• VSCode</Text>
           </View>
           
           <View style={styles.setupSelectionContainer}>
@@ -111,7 +112,7 @@ export default function About() {
                   styles.setupButtonText,
                   selectedSetup === 'gpu' ? styles.activeButtonText : {}
                 ]}>
-                  GPU Setup
+                  Nvidia GPU Setup
                 </Text>
               </TouchableOpacity>
               
@@ -126,7 +127,7 @@ export default function About() {
                   styles.setupButtonText,
                   selectedSetup === 'cpu' ? styles.activeButtonText : {}
                 ]}>
-                  Non-GPU Setup(Mac Users)
+                  Remote Setup(Mac Users)
                 </Text>
               </TouchableOpacity>
             </View>
@@ -139,14 +140,13 @@ export default function About() {
                 <Text style={styles.bulletPoint}>• Clone the repository:</Text>
                 <View style={styles.codeBlock}>
                   <Text style={styles.code}>
-                    {`git clone https://gitlab.csi.miamioh.edu/2025-senior-design-projects/David_Maltbie/David-Maltbie.git`}
+                    {`git clone https://github.com/BK15000/Shelfie-2025-Local.git`}
                   </Text>
                 </View>
                 <Text style={styles.bulletPoint}>• Navigate to the project directory</Text>
-                <Text style={styles.bulletPoint}>• Switch branches:</Text>
                 <View style={styles.codeBlock}>
                   <Text style={styles.code}>
-                    {`git switch add-seperate-compose-for-frontend-and-identification`}
+                    {`cd Shelfie-2025-Local`}
                   </Text>
                 </View>
                 <Text style={styles.bulletPoint}>• Navigate to the identification directory:</Text>
@@ -179,23 +179,106 @@ export default function About() {
 
               <Text style={styles.subheading}>Notes</Text>
               <View style={styles.bulletPoints}>
-                <Text style={styles.bulletPoint}>• You can alos view your collection here http://192.189.65.229:8081/collection</Text>
+              <Text style={styles.bulletPoint}>• Make sure to set OpenAI API key in profile</Text>
+              <Text style={styles.bulletPoint}>• Do not modify the IP address from http://localhost</Text>
+              <Text style={styles.bulletPoint}>• Do not modify the port from 8080</Text>
+                <Text style={styles.bulletPoint}>• You can also view your collection here http://192.189.65.229:8081/collection, but identification services will not be available</Text>
               </View>
             </>
           )}
           
           {selectedSetup === 'cpu' && (
             <>
-              <Text style={styles.subheading}>2. Non-GPU Setup(Mac Users)</Text>
+              <Text style={styles.subheading}>2. Set up Brev.dev Environment</Text>
+              
+              <Text style={styles.description}>
+                First, we'll set up your Brev.dev environment for non-GPU development:
+              </Text>
+
+              <Text style={styles.bulletPoint}>1. Create Account</Text>
+              <View style={styles.indentedContent}>
+                <Text style={styles.description}>
+                  Create a brev.dev account by following the documentation at:
+                </Text>
+                <TouchableOpacity 
+                  onPress={() => Linking.openURL('https://docs.nvidia.com/brev/latest/quick-start.html')}
+                  style={styles.link}
+                >
+                  <Text style={styles.linkText}>Brev.dev Quick Start Guide</Text>
+                </TouchableOpacity>
+              </View>
+
+              <Text style={styles.bulletPoint}>2. Container Configuration</Text>
+              <View style={styles.indentedContent}>
+                <Text style={styles.description}>Use the following configuration when creating your container:</Text>
+                <Image 
+                  source={require('../assets/images/setup.jpg')} 
+                  style={styles.setupImage}
+                  resizeMode="contain"
+                />
+              </View>
+
+              <Text style={styles.bulletPoint}>3. Container Setup</Text>
+              <View style={styles.indentedContent}>
+                <Text style={styles.description}>• Stay on the brev control panel</Text>
+                <Text style={styles.description}>• Wait for container building to complete</Text>
+                <Image 
+                  source={require('../assets/images/FinishedSetup.jpg')} 
+                  style={styles.setupImage}
+                  resizeMode="contain"
+                />
+                <Text style={styles.description}>• Expose port 8080</Text>
+                <Text style={styles.description}>• Save the HTTP URL/IP Address, for example:</Text>
+                <View style={styles.codeBlock}>
+                  <Text style={styles.code}>http://ec2-3-94-7-60.compute-1.amazonaws.com/</Text>
+                </View>
+              </View>
+
+              <Text style={styles.bulletPoint}>4. Local Setup</Text>
+              <View style={styles.indentedContent}>
+                <Text style={styles.description}>• Download and sign into your brev account using the "Install CLI command" from the control panel</Text>
+                <Text style={styles.description}>• Open the container in VSCode:</Text>
+                <View style={styles.codeBlock}>
+                  <Text style={styles.code}>brev open container-name</Text>
+                </View>
+                <Text style={styles.description}>Note: When brev asks for workspace selection, choose 'home'</Text>
+              </View>
+
+              <Text style={styles.subheading}>3. Clone Repository</Text>
               <View style={styles.bulletPoints}>
                 <Text style={styles.bulletPoint}>• Clone the repository:</Text>
                 <View style={styles.codeBlock}>
                   <Text style={styles.code}>
-                    {`git clone [repository URL]`}
+                    {`git clone https://github.com/BK15000/Shelfie-2025.git`}
                   </Text>
                 </View>
+                <Text style={styles.bulletPoint}>• Navigate to the project directory:</Text>
+                <View style={styles.codeBlock}>
+                  <Text style={styles.code}>
+                    {`cd Shelfie-2025`}
+                  </Text>
+                </View>
+                <Text style={styles.bulletPoint}>• Download SAM:</Text>
+                <View style={styles.codeBlock}>
+                  <Text style={styles.code}>
+                    {`curl https://dl.fbaipublicfiles.com/segment_anything/sam_vit_l_0b3195.pth --output sam_vit_l_0b3195.pth`}
+                  </Text>
+                </View>
+                <Text style={styles.bulletPoint}>• Run the code:</Text>
+                <View style={styles.codeBlock}>
+                  <Text style={styles.code}>
+                    {`docker compose up --build`}
+                  </Text>
+                </View>
+                <Text style={styles.bulletPoint}>• Set your HTTP URL/IP from the Brev control panel and Port to 8080 on Profile page</Text>
               </View>
 
+              <Text style={styles.subheading}>Notes</Text>
+              <View style={styles.bulletPoints}>
+                <Text style={styles.bulletPoint}>• Make sure to set OpenAI API key in profile</Text>
+                <Text style={styles.bulletPoint}>• Make sure to add funds to OpenAI API</Text>
+                <Text style={styles.bulletPoint}>• Make sure to delete the brev container ater you're done</Text>
+              </View>
             </>
           )}
           
@@ -261,8 +344,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 200,
     borderRadius: 8,
-    borderWidth: 1,
-    borderColor: COLORS.border,
   },
   imageCaption: {
     fontSize: TYPOGRAPHY.fontSizes.sm,
@@ -320,5 +401,23 @@ const styles = StyleSheet.create({
     fontFamily: 'monospace',
     fontSize: TYPOGRAPHY.fontSizes.sm,
     color: COLORS.text.code || COLORS.text.primary,
+  },
+  indentedContent: {
+    marginLeft: SPACING.lg,
+    marginBottom: SPACING.md,
+  },
+  link: {
+    marginVertical: SPACING.xs,
+  },
+  linkText: {
+    color: COLORS.primary,
+    textDecorationLine: 'underline',
+    fontSize: TYPOGRAPHY.fontSizes.md,
+  },
+  setupImage: {
+    width: '100%',
+    height: 300,
+    marginVertical: SPACING.md,
+    borderRadius: 8,
   },
 });
