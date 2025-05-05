@@ -277,7 +277,7 @@ export default function About() {
               <View style={styles.bulletPoints}>
                 <Text style={styles.bulletPoint}>• Make sure to set OpenAI API key in profile</Text>
                 <Text style={styles.bulletPoint}>• Make sure to add funds to OpenAI API</Text>
-                <Text style={styles.bulletPoint}>• Make sure to delete the brev container ater you're done</Text>
+                <Text style={styles.bulletPoint}>• Make sure to delete the brev container after you're done</Text>
               </View>
             </>
           )}
